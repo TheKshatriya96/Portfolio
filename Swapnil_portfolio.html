@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animation Portfolio - Swapnil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient 3s ease infinite;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        select, input {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            backdrop-filter: blur(5px);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input:focus {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .portfolio-item {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .portfolio-item:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .brand {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .year {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+        }
+
+        .description {
+            line-height: 1.6;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .view-link {
+            display: inline-block;
+            background: linear-gradient(45deg, #45b7d1, #96c93f);
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .view-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(69, 183, 209, 0.4);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2em;
+        }
+
+        .error-message {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .status-message {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4caf50;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            h1 { font-size: 2em; }
+            .filters { flex-direction: column; align-items: center; }
+            .gallery { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Animation Portfolio</h1>
+            <p class="subtitle">Motion Design & Creative Animation Works</p>
+        </header>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label for="search">Search Projects</label>
+                <input type="text" id="search" placeholder="Search projects...">
+            </div>
+            <div class="filter-group">
+                <label for="brandFilter">Filter by Brand</label>
+                <select id="brandFilter">
+                    <option value="">All Brands</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="yearFilter">Filter by Year</label>
+                <select id="yearFilter">
+                    <option value="">All Years</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="loading" class="loading">
+            🔄 Loading portfolio data...
+        </div>
+
+        <div id="main-content" style="display: none;">
+            <div id="status-messages"></div>
+            <div class="gallery" id="portfolio-gallery">
+                <!-- Portfolio items will be dynamically loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================
+        // CONFIGURATION
+        // =========================
+        const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/1us4yhNQdWYBuLYFb18Mzo5B1DFqdK3SQo5QQECtu_ys/export?format=csv&gid=0';
+        const USE_GOOGLE_SHEETS = true;
+
+        // Optional: Google Sheets API v4 (no CORS issues)
+        const USE_GOOGLE_SHEETS_API = false;
+        const API_KEY = 'YOUR_API_KEY';
+        const SPREADSHEET_ID = '1us4yhNQdWYBuLYFb18Mzo5B1DFqdK3SQo5QQECtu_ys';
+        const SHEET_NAME = 'Sheet1';
+
+        // =========================
+        // STATE
+        // =========================
+        let portfolioData = [];
+
+        // =========================
+        // HELPER FUNCTIONS
+        // =========================
+        function showError(message) {
+            const el = document.getElementById('status-messages') || document.body;
+            const div = document.createElement('div');
+            div.className = 'error-message';
+            div.textContent = message;
+            el.appendChild(div);
+            console.error('Error:', message);
+        }
+
+        function showStatus(message) {
+            const el = document.getElementById('status-messages') || document.body;
+            const div = document.createElement('div');
+            div.className = 'status-message';
+            div.textContent = message;
+            el.appendChild(div);
+            console.log('Status:', message);
+        }
+
+        function finalizeRender(statusMsg) {
+            try {
+                populateFilters();
+                renderGallery();
+
+                const loading = document.getElementById('loading');
+                const main = document.getElementById('main-content');
+
+                if (loading) loading.style.display = 'none';
+                if (main) main.style.display = 'block';
+
+                showStatus(statusMsg);
+                console.log('✅ Portfolio rendered successfully');
+            } catch (e) {
+                console.error('finalizeRender error:', e);
+                showError('Error rendering portfolio: ' + e.message);
+            }
+        }
+
+        // Enhanced CSV parser with better error handling
+        function parseCSV(text) {
+            try {
+                console.log('📊 Parsing CSV data...');
+                const lines = text.trim().split('\n');
+
+                if (lines.length < 2) {
+                    console.warn('CSV has fewer than 2 lines');
+                    return [];
+                }
+
+                // Parse headers - fix the bug in original (lines[0] not lines)
+                const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, '').toLowerCase());
+                console.log('📋 Headers found:', headers);
+
+                const getIdx = (keyword, defaultIdx) => {
+                    const index = headers.findIndex(h => h.includes(keyword));
+                    return index >= 0 ? index : defaultIdx;
+                };
+
+                const columnIndices = {
+                    url: getIdx('url', 0),
+                    description: getIdx('desc', 1),
+                    year: getIdx('year', 2),
+                    brand: getIdx('brand', 3)
+                };
+
+                console.log('🗺️ Column mapping:', columnIndices);
+
+                const parsedData = [];
+
+                // Process each data row
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+
+                    // Enhanced CSV parsing to handle quotes and commas
+                    const values = [];
+                    let currentValue = '';
+                    let insideQuotes = false;
+
+                    for (let j = 0; j < line.length; j++) {
+                        const char = line[j];
+                        if (char === '"') {
+                            insideQuotes = !insideQuotes;
+                        } else if (char === ',' && !insideQuotes) {
+                            values.push(currentValue.replace(/^"|"$/g, '').trim());
+                            currentValue = '';
+                        } else {
+                            currentValue += char;
+                        }
+                    }
+                    values.push(currentValue.replace(/^"|"$/g, '').trim());
+
+                    // Create portfolio item
+                    const url = values[columnIndices.url] || '';
+                    if (url.trim()) {
+                        parsedData.push({
+                            url: url,
+                            description: values[columnIndices.description] || '',
+                            year: values[columnIndices.year] || '',
+                            brand: values[columnIndices.brand] || ''
+                        });
+                    }
+                }
+
+                console.log(`✅ Successfully parsed ${parsedData.length} portfolio items`);
+                return parsedData;
+
+            } catch (error) {
+                console.error('parseCSV error:', error);
+                return [];
+            }
+        }
+
+        // =========================
+        // DATA LOADING
+        // =========================
+        async function loadPortfolioData() {
+            try {
+                console.log('🚀 Starting portfolio data loading...');
+
+                // Method 1: Google Sheets API v4 (if configured)
+                if (USE_GOOGLE_SHEETS_API && API_KEY && API_KEY !== 'YOUR_API_KEY' && SPREADSHEET_ID) {
+                    try {
+                        console.log('📡 Method 1: Google Sheets API v4');
+                        const apiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}?key=${API_KEY}`;
+                        const response = await fetch(apiUrl);
+
+                        if (response.ok) {
+                            const jsonData = await response.json();
+                            if (jsonData.values && jsonData.values.length > 1) {
+                                const headers = jsonData.values[0].map(h => String(h).toLowerCase());
+                                const findIndex = (keyword, defaultIdx) => {
+                                    const idx = headers.findIndex(h => h.includes(keyword));
+                                    return idx >= 0 ? idx : defaultIdx;
+                                };
+
+                                const indices = {
+                                    url: findIndex('url', 0),
+                                    description: findIndex('desc', 1),
+                                    year: findIndex('year', 2),
+                                    brand: findIndex('brand', 3)
+                                };
+
+                                portfolioData = jsonData.values.slice(1)
+                                    .filter(row => (row[indices.url] || '').trim())
+                                    .map(row => ({
+                                        url: row[indices.url] || '',
+                                        description: row[indices.description] || '',
+                                        year: row[indices.year] || '',
+                                        brand: row[indices.brand] || ''
+                                    }));
+
+                                if (portfolioData.length > 0) {
+                                    finalizeRender(`✅ Loaded ${portfolioData.length} items via Google Sheets API`);
+                                    return;
+                                }
+                            }
+                        } else {
+                            console.warn('Sheets API response status:', response.status);
+                        }
+                    } catch (error) {
+                        console.warn('Sheets API method failed:', error);
+                    }
+                }
+
+                // Method 2: Direct CSV fetch (if Google Sheets enabled)
+                if (USE_GOOGLE_SHEETS) {
+                    try {
+                        console.log('📡 Method 2: Direct CSV fetch');
+                        const response = await fetch(GOOGLE_SHEETS_URL, {
+                            headers: { 'Accept': 'text/csv,text/plain,*/*' }
+                        });
+
+                        if (response.ok) {
+                            const csvText = await response.text();
+                            console.log('📄 CSV received, length:', csvText.length);
+
+                            if (csvText && csvText.length > 50 && !csvText.includes('<!DOCTYPE')) {
+                                portfolioData = parseCSV(csvText);
+                                if (portfolioData.length > 0) {
+                                    finalizeRender(`✅ Loaded ${portfolioData.length} items via direct CSV`);
+                                    return;
+                                }
+                            }
+                        } else {
+                            console.warn('Direct CSV fetch status:', response.status);
+                        }
+                    } catch (error) {
+                        console.warn('Direct CSV fetch failed:', error);
+                    }
+
+                    // Method 3: CORS proxy fallback
+                    try {
+                        console.log('📡 Method 3: CORS proxy via AllOrigins');
+                        const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(GOOGLE_SHEETS_URL);
+                        const proxyResponse = await fetch(proxyUrl);
+
+                        if (proxyResponse.ok) {
+                            const proxyData = await proxyResponse.json();
+                            const csvText = proxyData && proxyData.contents ? proxyData.contents : '';
+
+                            if (csvText && csvText.length > 50) {
+                                portfolioData = parseCSV(csvText);
+                                if (portfolioData.length > 0) {
+                                    finalizeRender(`✅ Loaded ${portfolioData.length} items via CORS proxy`);
+                                    return;
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.warn('CORS proxy method failed:', error);
+                    }
+                }
+
+                // Fallback: Use sample data
+                console.log('📋 All methods failed, using sample data');
+                portfolioData = [
+                    { url: 'https://instagram.com/p/sample1', description: 'Nike Air Max Campaign - Dynamic motion graphics showcasing the new Air Max collection with fluid transitions and bold typography.', year: '2024', brand: 'Nike' },
+                    { url: 'https://instagram.com/p/sample2', description: 'iPhone 15 Launch Animation - Sleek product reveal animation featuring smooth camera movements and minimalist design elements.', year: '2024', brand: 'Apple' },
+                    { url: 'https://instagram.com/p/sample3', description: 'Summer Campaign 2023 - Vibrant summer-themed animation with refreshing visual effects and upbeat motion graphics.', year: '2023', brand: 'Coca Cola' },
+                    { url: 'https://instagram.com/p/sample4', description: 'Galaxy S23 Features - Technical animation highlighting the advanced camera features with precise motion design.', year: '2023', brand: 'Samsung' },
+                    { url: 'https://instagram.com/p/sample5', description: 'Abstract Motion Study - Experimental animation exploring abstract forms and color transitions in 3D space.', year: '2022', brand: 'Personal' },
+                    { url: 'https://instagram.com/p/sample6', description: 'Just Do It Motivational - Inspiring sports animation with dynamic typography and athlete footage integration.', year: '2021', brand: 'Nike' }
+                ];
+
+                finalizeRender('📋 Using sample data (Google Sheets connection failed)');
+
+            } catch (error) {
+                console.error('❌ loadPortfolioData error:', error);
+                showError('Failed to load portfolio data: ' + error.message);
+
+                // Ensure UI still renders with empty or existing data
+                portfolioData = portfolioData.length ? portfolioData : [];
+                finalizeRender('⚠️ Rendered with existing/empty data due to error');
+            }
+        }
+
+        // =========================
+        // UI RENDERING
+        // =========================
+        function populateFilters() {
+            const brandFilter = document.getElementById('brandFilter');
+            const yearFilter = document.getElementById('yearFilter');
+
+            // Get unique brands and years
+            const brands = [...new Set(portfolioData.map(item => item.brand).filter(Boolean))].sort();
+            const years = [...new Set(portfolioData.map(item => item.year).filter(Boolean))].sort().reverse();
+
+            // Populate brand filter
+            brandFilter.innerHTML = '<option value="">All Brands</option>';
+            brands.forEach(brand => {
+                brandFilter.innerHTML += `<option value="${brand}">${brand}</option>`;
+            });
+
+            // Populate year filter
+            yearFilter.innerHTML = '<option value="">All Years</option>';
+            years.forEach(year => {
+                yearFilter.innerHTML += `<option value="${year}">${year}</option>`;
+            });
+        }
+
+        function renderGallery(items = portfolioData) {
+            const gallery = document.getElementById('portfolio-gallery');
+
+            if (!items || items.length === 0) {
+                gallery.innerHTML = '<div class="error-message">No items match your search criteria.</div>';
+                return;
+            }
+
+            gallery.innerHTML = items.map(item => `
+                <div class="portfolio-item">
+                    <div class="item-header">
+                        <div class="brand">${item.brand || 'Personal'}</div>
+                        <div class="year">${item.year || 'N/A'}</div>
+                    </div>
+                    <div class="description">${item.description || 'No description available'}</div>
+                    <a href="${item.url}" target="_blank" class="view-link">View Project →</a>
+                </div>
+            `).join('');
+        }
+
+        function filterPortfolio() {
+            const search = document.getElementById('search').value.toLowerCase();
+            const brandFilter = document.getElementById('brandFilter').value;
+            const yearFilter = document.getElementById('yearFilter').value;
+
+            const filteredItems = portfolioData.filter(item => {
+                const matchesSearch = !search || 
+                    (item.description || '').toLowerCase().includes(search) ||
+                    (item.brand || '').toLowerCase().includes(search);
+
+                const matchesBrand = !brandFilter || item.brand === brandFilter;
+                const matchesYear = !yearFilter || item.year === yearFilter;
+
+                return matchesSearch && matchesBrand && matchesYear;
+            });
+
+            renderGallery(filteredItems);
+        }
+
+        // =========================
+        // INITIALIZATION
+        // =========================
+        function initializePortfolio() {
+            try {
+                populateFilters();
+                renderGallery();
+
+                // Hide loading, show content
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+
+                // Add event listeners
+                document.getElementById('search').addEventListener('input', filterPortfolio);
+                document.getElementById('brandFilter').addEventListener('change', filterPortfolio);
+                document.getElementById('yearFilter').addEventListener('change', filterPortfolio);
+
+                console.log('✅ Portfolio initialized successfully');
+            } catch (error) {
+                console.error('❌ Portfolio initialization error:', error);
+                showError('Portfolio initialization failed: ' + error.message);
+            }
+        }
+
+        // Start the application when DOM is ready
+        document.addEventListener('DOMContentLoaded', loadPortfolioData);
+    </script>
+</body>
+</html>
