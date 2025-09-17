@@ -386,7 +386,7 @@
         let currentBrandFilter = null;
 
         // Configuration - Replace YOUR_SHEET_ID with your actual Google Sheets ID
-        const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/1us4yhNQdWYBuLYFb18Mzo5B1DFqdK3SQo5QQECtu_ys/edit?usp=sharing';
+        const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/1us4yhNQdWYBuLYFb18Mzo5B1DFqdK3SQo5QQECtu_ys/export?format=csv&gid=0';
         
         // Set this to true when you're ready to use Google Sheets, false to use sample data
         const USE_GOOGLE_SHEETS = true;
@@ -420,362 +420,61 @@
 
         // Function to parse CSV data
         function parseCSV(text) {
-            console.log('🔍 Parsing CSV data...');
-            console.log('📄 Raw CSV length:', text.length);
-            console.log('📄 First 300 characters:', text.substring(0, 300));
-
-            const lines = text.trim().split('');
-            console.log('📊 Total lines found:', lines.length);
-
-            if (lines.length === 0) {
-                console.error('❌ No lines found in CSV');
-                return [];
-            }
-
-            // Get headers from first line
-            const headerLine = lines[0];
-            console.log('📋 Header line:', headerLine);
-
-            const headers = headerLine.split(',').map(h => h.trim().replace(/"/g, '').toLowerCase());
-            console.log('📋 Headers found:', headers);
-
-            // Expected headers (case insensitive)
-            const expectedHeaders = ['url', 'description', 'year', 'brand'];
-            const headerMap = {};
-
-            // Map headers to expected format (case insensitive)
-            expectedHeaders.forEach(expected => {
-                const foundIndex = headers.findIndex(h => h === expected || h.includes(expected));
-                if (foundIndex !== -1) {
-                    headerMap[expected] = foundIndex;
-                }
-            });
-
-            console.log('🗺️ Header mapping:', headerMap);
-
-            // Check if we have the required headers
-            if (Object.keys(headerMap).length === 0) {
-                console.error('❌ No valid headers found. Expected: url, description, year, brand');
-                console.log('Available headers:', headers);
-                return [];
-            }
-
+            const lines = text.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
             const data = [];
 
-            // Process data lines (skip header)
             for (let i = 1; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) {
-                    console.log(`⏭️ Skipping empty line ${i + 1}`);
-                    continue;
-                }
-
-                // Enhanced CSV parsing to handle quotes and commas
-                const values = [];
-                let current = '';
-                let inQuotes = false;
-
-                for (let j = 0; j < line.length; j++) {
-                    const char = line[j];
-                    if (char === '"') {
-                        inQuotes = !inQuotes;
-                    } else if (char === ',' && !inQuotes) {
-                        values.push(current.trim().replace(/^"|"$/g, ''));
-                        current = '';
-                    } else {
-                        current += char;
+                if (lines[i].trim()) {
+                    const values = [];
+                    let current = '';
+                    let inQuotes = false;
+                    
+                    for (let char of lines[i]) {
+                        if (char === '"') {
+                            inQuotes = !inQuotes;
+                        } else if (char === ',' && !inQuotes) {
+                            values.push(current.trim());
+                            current = '';
+                        } else {
+                            current += char;
+                        }
                     }
-                }
-                values.push(current.trim().replace(/^"|"$/g, ''));
+                    values.push(current.trim());
 
-                console.log(`📝 Row ${i + 1} values:`, values);
-
-                // Create data object
-                const item = {};
-                let hasValidData = false;
-
-                expectedHeaders.forEach(header => {
-                    if (headerMap[header] !== undefined && values[headerMap[header]]) {
-                        item[header] = values[headerMap[header]];
-                        hasValidData = true;
-                    } else {
-                        item[header] = '';
+                    if (values.length >= 4) {
+                        data.push({
+                            url: values[0]?.replace(/"/g, ''),
+                            description: values[1]?.replace(/"/g, ''),
+                            year: values[2]?.replace(/"/g, ''),
+                            brand: values[3]?.replace(/"/g, '')
+                        });
                     }
-                });
-
-                if (hasValidData && item.url && item.url.trim()) {
-                    data.push(item);
-                    console.log(`✅ Added item ${data.length}:`, item);
-                } else {
-                    console.log(`⚠️ Skipping invalid row ${i + 1} - no URL or valid data`);
                 }
             }
-
-            console.log(`🎉 Successfully parsed ${data.length} portfolio items`);
             return data;
-        } 
+        }
 
         // Function to load data from Google Sheets
-        
-        // Test function to check Google Sheets connectivity
-        async function testGoogleSheetsConnection() {
-            console.log('🧪 Testing Google Sheets connection...');
-
-            try {
-                // Test different URL formats
-                const testUrls = [
-                    GOOGLE_SHEETS_URL,
-                    GOOGLE_SHEETS_URL.replace('/export?format=csv&gid=0', '/export?format=csv'),
-                    GOOGLE_SHEETS_URL.replace('&gid=0', '&gid=0&single=true'),
-                    GOOGLE_SHEETS_URL + '&headers=false'
-                ];
-
-                for (let i = 0; i < testUrls.length; i++) {
-                    console.log(`🔍 Testing URL ${i + 1}:`, testUrls[i]);
-                    try {
-                        const response = await fetch(testUrls[i], { 
-                            method: 'GET',
-                            mode: 'no-cors' // This helps bypass CORS for testing
-                        });
-                        console.log(`✅ URL ${i + 1} - Status: ${response.status}, Type: ${response.type}`);
-                    } catch (error) {
-                        console.log(`❌ URL ${i + 1} failed:`, error.message);
-                    }
-                }
-            } catch (error) {
-                console.error('❌ Connection test failed:', error);
-            }
-        }
-
-        // Alternative method using CORS proxy
-        async function loadPortfolioDataViaProxy() {
-            console.log('🔄 Attempting to load via CORS proxy...');
-
-            const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(GOOGLE_SHEETS_URL);
-
-            try {
-                const response = await fetch(proxyUrl);
-                const data = await response.json();
-
-                if (data.contents) {
-                    console.log('✅ Data received via proxy');
-                    console.log('📄 First 200 chars:', data.contents.substring(0, 200));
-                    const csvText = data.contents;
-                    portfolioData = parseCSV(csvText);
-                    return portfolioData.length > 0;
-                }
-            } catch (error) {
-                console.log('❌ Proxy method failed:', error);
-            }
-
-            return false;
-        }
-
-        // Try JSONP method for Google Sheets
-        async function loadPortfolioDataViaJSONP() {
-            console.log('🔄 Attempting JSONP method...');
-
-            try {
-                const jsonpUrl = GOOGLE_SHEETS_URL.replace('/export?format=csv', '/gviz/tq?tqx=out:json');
-                console.log('🔗 JSONP URL:', jsonpUrl);
-
-                const response = await fetch(jsonpUrl);
-
-                if (response.ok) {
-                    const jsonText = await response.text();
-                    console.log('📄 JSONP response length:', jsonText.length);
-
-                    // Parse Google Sheets JSONP response
-                    const match = jsonText.match(/google\.visualization\.Query\.setResponse\((.*)\);/);
-                    if (match) {
-                        const data = JSON.parse(match[1]);
-
-                        if (data.table && data.table.rows) {
-                            portfolioData = data.table.rows.map(row => ({
-                                url: row.c[0]?.v || '',
-                                description: row.c[1]?.v || '',
-                                year: row.c[2]?.v || '',
-                                brand: row.c[3]?.v || ''
-                            })).filter(item => item.url); // Filter out empty rows
-
-                            console.log('✅ JSONP method successful, items:', portfolioData.length);
-                            return portfolioData.length > 0;
-                        }
-                    }
-                }
-            } catch (error) {
-                console.log('❌ JSONP method failed:', error);
-            }
-
-            return false;
-        }
-
-async function loadPortfolioData() {
-            console.log('🚀 Starting portfolio data loading...');
-            console.log('⚙️ USE_GOOGLE_SHEETS:', USE_GOOGLE_SHEETS);
-            console.log('🔗 GOOGLE_SHEETS_URL:', GOOGLE_SHEETS_URL);
-
+        async function loadPortfolioData() {
             try {
                 if (USE_GOOGLE_SHEETS) {
-                    console.log('📊 Google Sheets mode enabled - trying multiple methods...');
-
-                    // Test connectivity first
-                    await testGoogleSheetsConnection();
-
-                    // Method 1: Direct fetch with enhanced headers
-                    console.log('📡 Method 1: Direct fetch with CORS handling...');
-                    try {
-                        const response = await fetch(GOOGLE_SHEETS_URL, {
-                            method: 'GET',
-                            headers: {
-                                'Accept': 'text/csv,text/plain,application/csv,*/*',
-                                'Cache-Control': 'no-cache',
-                                'Pragma': 'no-cache'
-                            },
-                            mode: 'cors'
-                        });
-
-                        console.log('📡 Response status:', response.status);
-                        console.log('📡 Response ok:', response.ok);
-                        console.log('📡 Response type:', response.type);
-                        console.log('📡 Response headers:', [...response.headers.entries()]);
-
-                        if (response.ok) {
-                            const csvText = await response.text();
-                            console.log('📄 CSV text received, length:', csvText.length);
-
-                            if (csvText && csvText.length > 10 && !csvText.includes('<!DOCTYPE')) {
-                                portfolioData = parseCSV(csvText);
-
-                                if (portfolioData.length > 0) {
-                                    console.log('✅ Method 1 successful! Loaded', portfolioData.length, 'items');
-                                    populateFilters();
-                                    renderGallery();
-                                    document.getElementById('loading').style.display = 'none';
-                                    document.getElementById('main-content').style.display = 'block';
-                                    return;
-                                }
-                            } else {
-                                console.log('⚠️ Method 1: Received HTML instead of CSV or empty response');
-                                console.log('First 200 chars:', csvText.substring(0, 200));
-                            }
-                        }
-                    } catch (error) {
-                        console.log('❌ Method 1 failed:', error.message);
+                    // Load from Google Sheets
+                    if (GOOGLE_SHEETS_URL.includes('YOUR_SHEET_ID')) {
+                        throw new Error('Please replace YOUR_SHEET_ID with your actual Google Sheets ID');
                     }
-
-                    // Method 2: Try via CORS proxy
-                    console.log('📡 Method 2: CORS proxy approach...');
-                    const proxySuccess = await loadPortfolioDataViaProxy();
-                    if (proxySuccess && portfolioData.length > 0) {
-                        console.log('✅ Method 2 successful! Loaded', portfolioData.length, 'items');
-                        populateFilters();
-                        renderGallery();
-                        document.getElementById('loading').style.display = 'none';
-                        document.getElementById('main-content').style.display = 'block';
-                        return;
-                    }
-
-                    // Method 3: JSONP approach
-                    console.log('📡 Method 3: JSONP approach...');
-                    const jsonpSuccess = await loadPortfolioDataViaJSONP();
-                    if (jsonpSuccess && portfolioData.length > 0) {
-                        console.log('✅ Method 3 successful! Loaded', portfolioData.length, 'items');
-                        populateFilters();
-                        renderGallery();
-                        document.getElementById('loading').style.display = 'none';
-                        document.getElementById('main-content').style.display = 'block';
-                        return;
-                    }
-
-                    // Method 4: Try with no-cors mode (opaque response)
-                    console.log('📡 Method 4: No-CORS mode (last resort)...');
-                    try {
-                        const response = await fetch(GOOGLE_SHEETS_URL, {
-                            method: 'GET',
-                            mode: 'no-cors'
-                        });
-
-                        console.log('📡 No-CORS response type:', response.type);
-
-                        if (response.type === 'opaque') {
-                            console.log('⚠️ Received opaque response - cannot read content directly');
-                            console.log('💡 This suggests the URL is accessible but CORS is blocking it');
-                        }
-                    } catch (error) {
-                        console.log('❌ Method 4 failed:', error.message);
-                    }
-
-                    // If all methods failed, provide detailed troubleshooting
-                    console.log('❌ All Google Sheets loading methods failed');
-                    console.log('🔧 Troubleshooting suggestions:');
-                    console.log('1. Make sure your Google Sheet is published to web (File > Share > Publish to web)');
-                    console.log('2. Verify the sharing is set to "Anyone with the link"');
-                    console.log('3. Check that your sheet has the correct column headers: URL, Description, Year, Brand');
-                    console.log('4. Try opening this URL directly in a new tab:', GOOGLE_SHEETS_URL);
-                    console.log('5. If the direct URL works but this doesn\'t, it\'s a CORS issue');
-
-                    throw new Error('All Google Sheets loading methods failed. Check console for detailed troubleshooting.');
-
-                } else {
-                    console.log('📋 Using sample data (USE_GOOGLE_SHEETS is false)');
-                }
-
-            } catch (error) {
-                console.error('❌ Error loading from Google Sheets:', error);
-                console.log('🔄 Falling back to sample data...');
-
-                // Show user-friendly error message
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                errorDiv.style.cssText = `
-                    background: #ffebee;
-                    border: 1px solid #f44336;
-                    color: #c62828;
-                    padding: 15px;
-                    margin: 20px 0;
-                    border-radius: 5px;
-                    font-family: Arial, sans-serif;
-                `;
-                errorDiv.innerHTML = `
-                    <strong>⚠️ Google Sheets Loading Failed</strong><br>
-                    Using sample data instead. Open browser console (F12) for detailed diagnostics.<br>
-                    <small>Error: ${error.message}</small>
-                `;
-                document.getElementById('main-content').prepend(errorDiv);
-            }
-
-            // Fallback: Use sample data
-            console.log('📊 Loading sample portfolio data...');
-            portfolioData = [
-                { url: 'https://instagram.com/p/sample1', description: 'Nike Air Max Campaign - Dynamic motion graphics showcasing the new Air Max collection with fluid transitions and bold typography.', year: '2024', brand: 'Nike' },
-                { url: 'https://instagram.com/p/sample2', description: 'iPhone 15 Launch Animation - Sleek product reveal animation featuring smooth camera movements and minimalist design elements.', year: '2024', brand: 'Apple' },
-                { url: 'https://instagram.com/p/sample3', description: 'Summer Campaign 2023 - Vibrant summer-themed animation with refreshing visual effects and upbeat motion graphics.', year: '2023', brand: 'Coca Cola' },
-                { url: 'https://instagram.com/p/sample4', description: 'Galaxy S23 Features - Technical animation highlighting the advanced camera features with precise motion design.', year: '2023', brand: 'Samsung' },
-                { url: 'https://instagram.com/p/sample5', description: 'Abstract Motion Study - Experimental animation exploring abstract forms and color transitions in 3D space.', year: '2022', brand: 'Personal' },
-                { url: 'https://instagram.com/p/sample6', description: 'Just Do It - Motivational - Inspiring sports animation with dynamic typography and athlete footage integration.', year: '2021', brand: 'Nike' }
-            ];
-
-            populateFilters();
-            renderGallery();
-
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('main-content').style.display = 'block';
-
-            console.log('✅ Portfolio loaded with', portfolioData.length, 'items');
-        }
                     
-/*                    const response = await fetch(GOOGLE_SHEETS_URL);
+                    const response = await fetch(GOOGLE_SHEETS_URL);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
-                    }*/
-/*                    const csvText = await response.text();
+                    }
+                    const csvText = await response.text();
                     portfolioData = parseCSV(csvText);
                     
                     if (portfolioData.length === 0) {
                         throw new Error('No data found in the sheet. Please check your sheet structure.');
-                    }*/
-/*                 else {
+                    }
+                } else {
                     // Use sample data for demo
                     const sampleData = [
                         { url: 'https://instagram.com/p/sample1', description: 'Nike Air Max Campaign - Dynamic motion graphics showcasing the new Air Max collection with fluid transitions and bold typography.', year: '2024', brand: 'Nike' },
@@ -787,13 +486,13 @@ async function loadPortfolioData() {
                     ];
                     portfolioData = sampleData;
                 }
-*/
+
                 populateFilters();
                 renderGallery();
                 
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('main-content').style.display = 'block';
-/*
+
             } catch (error) {
                 console.error('Error loading portfolio data:', error);
                 let errorMessage = 'Failed to load portfolio data.';
@@ -810,7 +509,7 @@ async function loadPortfolioData() {
                 
                 showError(errorMessage);
             }
-        }*/
+        }
 
         function showError(message) {
             document.getElementById('loading').style.display = 'none';
